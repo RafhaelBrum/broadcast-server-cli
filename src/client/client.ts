@@ -1,11 +1,7 @@
 import WebSocket from "ws";
-import dotenv from 'dotenv';
 import readline from 'node:readline';
 
-
-dotenv.config();
-
-const PORT = process.env.PORT;
+const PORT = 8080;
 const ws = new WebSocket(`ws://localhost:${ PORT }`);
 const r1 = readline.createInterface({ input: process.stdin, output: process.stdout });
 
