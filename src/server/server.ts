@@ -1,28 +1,36 @@
 import WebSocket, { WebSocketServer } from 'ws';
 import dotenv from 'dotenv';
+import chalk from 'chalk';
 
 dotenv.config();
 const PORT = Number(process.env.PORT);
 const wss = new WebSocketServer({ port: PORT, });
-const clients = new Set<WebSocket>();
-
+const clientMap = new Map<WebSocket, { number: number, color: typeof chalk.white }>();
+const colors = [chalk.green, chalk.blue, chalk.magenta, chalk.cyan, chalk.yellow, chalk.red];
 var clientCount = 0;
 
 wss.on('connection', (ws: WebSocket) => {
-    clients.add(ws);
-    clientCount++
+    clientCount++;
     const clientNumber = clientCount;
-    console.log(`New client connected: Client ${ clientNumber }`);
+    const clientColor = colors[(clientCount - 1) % colors.length];
+
+    clientMap.set(ws, { number: clientNumber, color: clientColor });
+    console.log(clientColor(`>> Client ${ clientNumber } connected`));
 
 
     ws.on('message', (message: string) => {
-        console.log(`Client ${ clientNumber }: ${ message }`);
-        broadcast(message);
+        const clientData = clientMap.get(ws);
+        if (clientData) {
+            const { number, color } = clientData;
+            console.log(color(`Client ${ number }: ${ message }`));
+            broadcast(`Client ${ number }: ${ message }`);
+        }
+
     });
 
     ws.on('close', () => {
-        console.log(`Client ${ clientNumber } disconnected`);
-        clients.delete(ws);
+        clientMap.delete(ws);
+        console.log(clientColor(`>> Client ${ clientNumber } disconnected`));
     });
 
 });
