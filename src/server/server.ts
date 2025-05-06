@@ -1,12 +1,15 @@
 import WebSocket, { WebSocketServer } from 'ws';
 import dotenv from 'dotenv';
 import chalk from 'chalk';
+import fs from 'fs';
+import path from 'path';
 
 dotenv.config();
 const PORT = Number(process.env.PORT);
 const wss = new WebSocketServer({ port: PORT, });
 const clientMap = new Map<WebSocket, { number: number, color: typeof chalk.white }>();
 const colors = [chalk.green, chalk.blue, chalk.magenta, chalk.cyan, chalk.yellow, chalk.red];
+const logPath = path.join(__dirname, '../../chat.log');
 var clientCount = 0;
 
 wss.on('connection', (ws: WebSocket) => {
@@ -24,6 +27,7 @@ wss.on('connection', (ws: WebSocket) => {
             const { number, color } = clientData;
             console.log(color(`Client ${ number }: ${ message }`));
             broadcast(`Client ${ number }: ${ message }`, ws);
+            saveHistory(message, number);
         }
     });
 
@@ -42,4 +46,11 @@ function broadcast(message: string, sender: WebSocket) {
     });
 };
 
-console.log(`WebSocket server started on port ${ PORT }`);
+function saveHistory(message: string, user: number) {
+    const timestamp = new Date().toISOString();
+    fs.appendFile(logPath, `[${ timestamp }] - Client ${ user }: ${ message }\n`, (err) => {
+        if (err) console.log('error writing file', err);
+    });
+};
+
+console.log(`Server started on port ${ PORT }`);
