@@ -13,7 +13,7 @@ wss.on('connection', (ws: WebSocket) => {
 
     ws.on('message', (message: string) => {
         console.log(`Received message: ${ message }`);
-        ws.send(`Server received your message: ${ message }`);
+        broadcast(message);
     });
 
     ws.on('close', () => {
@@ -22,3 +22,13 @@ wss.on('connection', (ws: WebSocket) => {
     });
 
 });
+
+function broadcast(message: string) {
+    wss.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(message);
+        }
+    });
+};
+
+console.log(`WebSocket server started on port ${ PORT }`);
