@@ -23,9 +23,8 @@ wss.on('connection', (ws: WebSocket) => {
         if (clientData) {
             const { number, color } = clientData;
             console.log(color(`Client ${ number }: ${ message }`));
-            broadcast(`Client ${ number }: ${ message }`);
+            broadcast(`Client ${ number }: ${ message }`, ws);
         }
-
     });
 
     ws.on('close', () => {
@@ -35,9 +34,9 @@ wss.on('connection', (ws: WebSocket) => {
 
 });
 
-function broadcast(message: string) {
+function broadcast(message: string, sender: WebSocket) {
     wss.clients.forEach(client => {
-        if (client.readyState === WebSocket.OPEN) {
+        if (client !== sender && client.readyState === WebSocket.OPEN) {
             client.send(message);
         }
     });

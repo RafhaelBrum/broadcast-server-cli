@@ -1,5 +1,13 @@
 import WebSocket from "ws";
 import readline from 'node:readline';
+import chalk from 'chalk';
+
+const colors = [chalk.green, chalk.blue, chalk.magenta, chalk.cyan, chalk.yellow, chalk.red];
+
+function getColorFromNumber(clientNumber: number) {
+    return colors[(clientNumber - 1) % colors.length];
+};
+
 
 const PORT = 8080;
 const ws = new WebSocket(`ws://localhost:${ PORT }`);
@@ -19,16 +27,22 @@ r1.on('line', (message: string) => {
 
 
 ws.on('open', () => {
-    console.log('Connected to server');
+    console.log('----------- Connected to server -----------\n\n');
 });
 
 ws.on('message', (message: string) => {
     const currentInput = r1.line;
+    const text = message.toString().trim();
+
+    const match = text.match(/^Client (\d+):/);
+    const number = match ? parseInt(match[1]) : 0;
+    const color = getColorFromNumber(number);
+
 
     readline.clearLine(process.stdout, 0);
     readline.cursorTo(process.stdout, 0);
 
-    console.log(message.toString().trim());
+    console.log(color(text));
 
     refreshInput(currentInput);
     r1.prompt(true);
