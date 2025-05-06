@@ -16,7 +16,7 @@ wss.on('connection', (ws: WebSocket) => {
 
 
     ws.on('message', (message: string) => {
-        console.log(`Received message: ${ message }`);
+        console.log(`Client ${ clientNumber }: ${ message }`);
         broadcast(message);
     });
 
