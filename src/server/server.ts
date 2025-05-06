@@ -4,12 +4,16 @@ import dotenv from 'dotenv';
 dotenv.config();
 const PORT = Number(process.env.PORT);
 const wss = new WebSocketServer({ port: PORT, });
-
 const clients = new Set<WebSocket>();
+
+var clientCount = 0;
 
 wss.on('connection', (ws: WebSocket) => {
     clients.add(ws);
-    console.log(`New client connected: Client ${ clients.size }`);
+    clientCount++
+    const clientNumber = clientCount;
+    console.log(`New client connected: Client ${ clientNumber }`);
+
 
     ws.on('message', (message: string) => {
         console.log(`Received message: ${ message }`);
@@ -17,7 +21,7 @@ wss.on('connection', (ws: WebSocket) => {
     });
 
     ws.on('close', () => {
-        console.log(`Client ${ ws } disconnected`);
+        console.log(`Client ${ clientNumber } disconnected`);
         clients.delete(ws);
     });
 
