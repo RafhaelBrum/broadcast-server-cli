@@ -20,7 +20,6 @@ r1.on('line', (message: string) => {
 
 ws.on('open', () => {
     console.log('Connected to server');
-    ws.send('Hello server');
 });
 
 ws.on('message', (message: string) => {
