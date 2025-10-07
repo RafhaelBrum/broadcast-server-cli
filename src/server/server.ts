@@ -6,8 +6,8 @@ import path from 'path';
 
 dotenv.config();
 const PORT = Number(process.env.PORT);
-const wss = new WebSocketServer({ port: PORT, });
-const clientMap = new Map<WebSocket, { number: number, color: typeof chalk.white }>();
+const wss = new WebSocketServer({ port: PORT });
+const clientMap = new Map<WebSocket, { number: number; color: typeof chalk.white }>();
 const colors = [chalk.green, chalk.blue, chalk.magenta, chalk.cyan, chalk.yellow, chalk.red];
 const logPath = path.join(__dirname, '../../chat.log');
 var clientCount = 0;
@@ -18,39 +18,41 @@ wss.on('connection', (ws: WebSocket) => {
     const clientColor = colors[(clientCount - 1) % colors.length];
 
     clientMap.set(ws, { number: clientNumber, color: clientColor });
-    console.log(clientColor(`>> Client ${ clientNumber } connected`));
+    console.log(clientColor(`>> Client ${clientNumber} connected`));
 
+    broadcast(`>> Client ${clientNumber} connected`, ws);
 
     ws.on('message', (message: string) => {
         const clientData = clientMap.get(ws);
         if (clientData) {
             const { number, color } = clientData;
-            console.log(color(`Client ${ number }: ${ message }`));
-            broadcast(`Client ${ number }: ${ message }`, ws);
+            console.log(color(`Client ${number}: ${message}`));
+            broadcast(`Client ${number}: ${message}`, ws);
             saveHistory(message, number);
         }
     });
 
     ws.on('close', () => {
         clientMap.delete(ws);
-        console.log(clientColor(`>> Client ${ clientNumber } disconnected`));
-    });
+        console.log(clientColor(`>> Client ${clientNumber} disconnected`));
 
+        broadcast(`>> Client ${clientNumber} disconnected`, ws);
+    });
 });
 
 function broadcast(message: string, sender: WebSocket) {
-    wss.clients.forEach(client => {
+    wss.clients.forEach((client) => {
         if (client !== sender && client.readyState === WebSocket.OPEN) {
             client.send(message);
         }
     });
-};
+}
 
 function saveHistory(message: string, user: number) {
     const timestamp = new Date().toISOString();
-    fs.appendFile(logPath, `[${ timestamp }] - Client ${ user }: ${ message }\n`, (err) => {
+    fs.appendFile(logPath, `[${timestamp}] - Client ${user}: ${message}\n`, (err) => {
         if (err) console.log('error writing file', err);
     });
-};
+}
 
-console.log(`Server started on port ${ PORT }`);
+console.log(`Server started on port ${PORT}`);
